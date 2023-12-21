@@ -114,7 +114,7 @@ SELECT Cohort_Date,
 		CONCAT(CAST((1.0* [11]/[1] * 100) AS INT), '%') as [11],
 		CONCAT(CAST((1.0* [12]/[1] * 100) AS INT), '%') as [12],
 		CONCAT(CAST((1.0* [13]/[1] * 100) AS INT), '%') as [13]
-INTO Cohort_Pivot_Table_Percent
+--INTO Cohort_Pivot_Table_Percent
 FROM Cohort_pivot_Analysis
 ORDER BY Cohort_Date
 ------ RESULTS
@@ -131,11 +131,11 @@ NUM2 AS (SELECT DISTINCT CustomerID as T2
 FROM [dbo].[Online_Retail_Data_Cleaned]
 WHERE InvoiceDate between '2010-12-01' and '2010-12-31')
 
-SELECT COUNT(NUM2.T2)
+SELECT *
 FROM Num1
 LEFT JOIN NUM2
 ON NUM1.T1 = NUM2.T2
-WHERE NUM2.T2 IS NOT NULL
+WHERE NUM2.T2 IS NULL
 
 ----- New customers and Returning customers
 ----- Looking for new customers of the months
@@ -276,10 +276,14 @@ SELECT  Country,
 		CAST(percent_change
 				 AS DECIMAL(18, 1)       
     ) AS percentage_changing_status
-INTO The_Revenue_Trends
-FROM Difference_Revenue_by_Quarter_Year
+--INTO The_Revenue_Trends
+FROM Difference_Revenue_by_Quarter_Year 
 ORDER BY Country, Year_Invoice, Quater_Invoice;
 
 -------------The Reslut of Revenue Trends
-SELECT *
+USE [Online Retail]
+GO
+SELECT Country, Year_Invoice ,SUM(Revenue_followed_Country)
 FROM The_Revenue_Trends
+GROUP BY Country, Year_Invoice
+ORDER BY Country
