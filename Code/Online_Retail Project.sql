@@ -179,71 +179,6 @@ WHERE ranking_revenue <=20
 
 USE [Online Retail]
 GO
-WITH Revenue_followed_Quarter_and_Country AS (
-		SELECT Country,DATEPART(YEAR,InvoiceDate) AS Year_Invoice, 
-		DATEPART(QUARTER,InvoiceDate) AS Quater_Invoice, 
-		SUM(Revenue) Revenue_followed_Country
-FROM (SELECT *, CAST(Quantity * UnitPrice AS INT) as Revenue
-FROM Online_Retail_Data_Cleaned ) T5
-GROUP BY Country, DATEPART(YEAR,InvoiceDate), DATEPART(QUARTER,InvoiceDate)
-),
-Previous_Revenue as ( 
-			SELECT *, 
-			COALESCE(LAG(Revenue_followed_Country) OVER (PARTITION BY Country ORDER BY Year_Invoice, Quater_Invoice),Revenue_followed_Country) AS prev_revenue
-FROM Revenue_followed_Quarter_and_Country),
-Difference_Revenue_by_Quater_Year as ( 
-		SELECT *,
-		(Revenue_followed_Country - prev_revenue) * 100/ prev_revenue AS percent_change
-FROM Previous_Revenue)
-SELECT  Country,
-        Quater_Invoice,
-        Revenue_followed_Country,
-		prev_revenue,
-		CASE WHEN Revenue_followed_Country > prev_revenue then percent_change
-			 WHEN Revenue_followed_Country < prev_revenue then - percent_change 
-			 ELSE 0
-			 END as percent_change_signed
-FROM Difference_Revenue_by_Quater_Year
-ORDER BY Country,Year_Invoice, Quater_Invoice ASC;
-
----------- Verson 1 khi Revenue_followed_Country dạng INT thì *100 để bên trong
-
-WITH Revenue_followed_Quarter_and_Country AS (
-    SELECT 
-        Country,
-        DATEPART(YEAR, InvoiceDate) AS Year_Invoice,
-        DATEPART(QUARTER, InvoiceDate) AS Quater_Invoice,
-        SUM(CAST(Quantity * UnitPrice AS INT)) AS Revenue_followed_Country
-    FROM Online_Retail_Data_Cleaned
-    GROUP BY Country, DATEPART(YEAR, InvoiceDate), DATEPART(QUARTER, InvoiceDate)
-),
-Previous_Revenue AS (
-    SELECT 
-        *,
-        COALESCE(LAG(Revenue_followed_Country) OVER (PARTITION BY Country ORDER BY Year_Invoice, Quater_Invoice), Revenue_followed_Country) AS prev_revenue
-    FROM Revenue_followed_Quarter_and_Country
-),
-Difference_Revenue_by_Quarter_Year AS (
-    SELECT 
-        *,
-        CAST((Revenue_followed_Country - prev_revenue) AS DECIMAL(18, 2))/ prev_revenue *100 AS percent_change
-    FROM Previous_Revenue
-)
-SELECT  
-    Country,
-    Quater_Invoice,
-    Revenue_followed_Country,
-    prev_revenue,
-    CASE 
-        WHEN percent_change > 0 THEN percent_change
-        WHEN percent_change < 0 THEN percent_change
-        ELSE 0
-    END AS percent_change_signed
-FROM Difference_Revenue_by_Quarter_Year
-ORDER BY Country, Year_Invoice, Quater_Invoice ASC;
------------ Verson 2 khi Revenue_followed_Country dạng Demical nên *100 không ảnh hưởng (FINAL)
-USE [Online Retail]
-GO
 
 WITH Revenue_followed_Quarter_and_Country AS (
     SELECT 
@@ -283,7 +218,18 @@ ORDER BY Country, Year_Invoice, Quater_Invoice;
 -------------The Reslut of Revenue Trends
 USE [Online Retail]
 GO
-SELECT Country, Year_Invoice ,SUM(Revenue_followed_Country)
+SELECT Country, Year_Invoice ,SUM(Revenue_followed_Country) AS Revenue_Per_Country_and_Year
+--INTO Revenue_by_Country
 FROM The_Revenue_Trends
 GROUP BY Country, Year_Invoice
 ORDER BY Country
+----------Customer_ID Table
+WITH Customer as (
+SELECT CustomerID, YEAR(InvoiceDate) as Year_Order, COUNT(*) as frequency_order,Quantity,  UnitPrice
+FROM [dbo].[Online_Retail_Data_Cleaned]
+GROUP BY CustomerID, InvoiceDate, Quantity,UnitPrice)
+SELECT CustomerID,Year_Order, SUM(Frequency_order) as total_order, CAST(SUM(Quantity * Unitprice) AS decimal(18,0)) as Revenue
+INTO Revenue_Order_by_Customers
+FROM Customer 
+GROUP BY CustomerID,Year_Order
+
