@@ -1,7 +1,6 @@
 ﻿-- Expolre Data Analysis
 -- Total records: 541909 
 -- 165080 rows have no CustomerID
--- 165080 rows have no CustomerID
 -- 406829 have CustomerID
 -- Negative UnitPrice: 2 rows
 -- 1454 (rows) have no Description information also Null values of CustomerID
@@ -22,7 +21,7 @@ WHERE Quantity > 0 AND UnitPrice > 0),
 dup_check as ( SELECT *, ROW_NUMBER () OVER (PARTITION BY InvoiceNo, StockCode, Quantity ORDER BY InvoiceDate) as dup
 FROM quantity_unit_price)
 SELECT *
-INTO Online_Retail_Data_Cleaned
+--INTO Online_Retail_Data_Cleaned
 FROM dup_check
 WHERE dup = 1 
 
@@ -65,12 +64,9 @@ FROM (
 
 --- Result: 392669 rows affected to Cohort_retention
 
-SELECT *
-  FROM #Cohort_retention_Analysis
-  WHERE CustomerID = '16378' --- Dùng Distinct thì sẽ chỉ đếm tỷ lệ giữ chân khách hàng mua qua từng tháng chứ không đề cập đến revenue có thể phát triển thêm cái này
 --- Pivot to Cohort
  SELECT *
- INTO Cohort_pivot_Analysis
+--INTO Cohort_pivot_Analysis
  FROM (SELECT DISTINCT
 		CustomerID,
 		Cohort_Date,
@@ -117,28 +113,17 @@ SELECT Cohort_Date,
 --INTO Cohort_Pivot_Table_Percent
 FROM Cohort_pivot_Analysis
 ORDER BY Cohort_Date
------- RESULTS
 
+------ Result of Cohort_Pivot_Table_Percent
 SELECT *
 FROM Cohort_Pivot_Table_Percent
 ORDER BY Cohort_Date
 
-------------------- Ví dụ về tìm số khách hàng mới trong tháng 
-WITH Num1 AS (SELECT DISTINCT CustomerID as T1
-FROM [dbo].[Online_Retail_Data_Cleaned]
-WHERE InvoiceDate between '2011-01-01' and '2011-01-31'),
-NUM2 AS (SELECT DISTINCT CustomerID as T2
-FROM [dbo].[Online_Retail_Data_Cleaned]
-WHERE InvoiceDate between '2010-12-01' and '2010-12-31')
-
-SELECT *
-FROM Num1
-LEFT JOIN NUM2
-ON NUM1.T1 = NUM2.T2
-WHERE NUM2.T2 IS NULL
 
 ----- New customers and Returning customers
 ----- Looking for new customers of the months
+USE [Online Retail]
+GO
 SELECT YEAR(Cohort_Date) as Year_CohortDate, MONTH(Cohort_Date) Month_CohortDate,[1] as New_Customers
 INTO #Cohort4
 FROM [dbo].[Cohort_pivot_Analysis] 
@@ -159,7 +144,8 @@ FROM #Cohort5
 ORDER BY Year_Invoice,Month_Invoice 
 
 ------ RPR (Repeat Purchase Rate)
-SELECT Year_CohortDate,Month_CohortDate,New_Customers,Total_Customer_followed_Month_of_the_Year as Total_Customers
+SELECT Year_CohortDate,Month_CohortDate,New_Customers,Total_Customer_followed_Month_of_the_Year - New_Customers as Return_Customers,Total_Customer_followed_Month_of_the_Year as Total_Customers
+--INTO RPR_Table
 FROM #Cohort4 A
 JOIN #Cohort5 B
 ON A.Year_CohortDate = B.Year_Invoice AND A.Month_CohortDate = B.Month_Invoice
@@ -216,20 +202,20 @@ FROM Difference_Revenue_by_Quarter_Year
 ORDER BY Country, Year_Invoice, Quater_Invoice;
 
 -------------The Reslut of Revenue Trends
-USE [Online Retail]
-GO
 SELECT Country, Year_Invoice ,SUM(Revenue_followed_Country) AS Revenue_Per_Country_and_Year
 --INTO Revenue_by_Country
 FROM The_Revenue_Trends
 GROUP BY Country, Year_Invoice
 ORDER BY Country
 ----------Customer_ID Table
+USE [Online Retail]
+GO
 WITH Customer as (
 SELECT CustomerID, YEAR(InvoiceDate) as Year_Order, COUNT(*) as frequency_order,Quantity,  UnitPrice
 FROM [dbo].[Online_Retail_Data_Cleaned]
 GROUP BY CustomerID, InvoiceDate, Quantity,UnitPrice)
 SELECT CustomerID,Year_Order, SUM(Frequency_order) as total_order, CAST(SUM(Quantity * Unitprice) AS decimal(18,0)) as Revenue
-INTO Revenue_Order_by_Customers
+--INTO Revenue_Order_by_Customers
 FROM Customer 
 GROUP BY CustomerID,Year_Order
 

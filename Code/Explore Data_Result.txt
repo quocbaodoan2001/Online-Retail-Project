@@ -1,0 +1,39 @@
+Explore from Python
+
+Data Type
+
+InvoiceNo: object
+StockCode: object
+Description: object
+Quantity: int64
+InvoiceDate: datetime64[ns]
+UnitPrice: float64
+CustomerID: float64
+Country: object
+<class 'pandas.core.frame.DataFrame'>
+---------------------
+Check Null Value
+
+InvoiceNo           0
+StockCode           0
+Description      1454
+Quantity            0
+InvoiceDate         0
+UnitPrice           0
+CustomerID     135080
+Country             0
+----------------------
+Check the data type of the data variable
+dtype: int64
+----------------------------------------------
+Explore from SQL
+
+Total records: 541909
+- 165080 rows have no CustomerID
+- 165080 rows have no CustomerID
+- 406829 have CustomerID
+- Negative UnitPrice: 2 rows
+- 1454 (rows) have no Description information also Null values of CustomerID
+- 397884 rows have Quantity > 0 AND UnitPrice > 0
+- 5195 rows duplicate
+- 392669 rows have been cleand
