@@ -41,4 +41,4 @@ Tools used: Python, SQL, Power BI
 
 5. Analyze Data
 
-It is presented in the Analyze folder as a PowerPoint file.
+  It is presented in the Analyze folder as a PowerPoint file.
