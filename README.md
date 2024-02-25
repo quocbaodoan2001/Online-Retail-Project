@@ -39,3 +39,6 @@ Tools used: Python, SQL, Power BI
 - 5195 rows duplicate
 - 392669 rows have been cleaned.
 
+5. Analyze Data
+
+It is presented in the Analyze folder as a PowerPoint file.
