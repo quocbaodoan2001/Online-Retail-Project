@@ -1,6 +1,6 @@
 ﻿-- Expolre Data Analysis
 -- Total records: 541909 
--- 165080 rows have no CustomerID
+-- 135080 rows have no CustomerID
 -- 406829 have CustomerID
 -- Negative UnitPrice: 2 rows
 -- 1454 (rows) have no Description information also Null values of CustomerID
